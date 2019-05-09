@@ -12,7 +12,7 @@ const routers = new Router({
 });
 
 routers.beforeEach((to, from, next) => {
-    const loginArr = ['/login']; //  不重定向白名单
+    const loginArr = ['/login','/register']; //  不重定向白名单
     let isLogin = localStorage.getItem('TOKEN'); //  => 返回testKey对应的值  // 判断是否登录，本地存储有用户数据则视为已经登录
     // 判断是否登陆
     if (isLogin) {
