@@ -73,42 +73,13 @@ router.post('/api/verification',function(req,res){
  * INSERT INTO loginlist (ID,USERNAME,PASSWORD) VALUES (5,'superman','A12345678')
  */
 router.post('/api/newlyAdded',function(req,res){
-    var data = {};
     var obj = {
         username:req.query.username,
         password:req.query.password
     };
+    var data = {};
     if(obj.username !== ''){
         if(obj.password !== ''){
-            /**
-             * token设置
-             * @type {{username: string, password: string}}
-             */
-            var header={
-                "alg": "HS256",
-                "typ": "JWT"
-            };
-            /**
-             * Token 数据写法
-             * @type {{iat: number, name: string, admin: boolean}}
-             */
-            var payload = {
-                iat: 1529033906,
-                name: obj.username,
-                admin: true
-                // exp: 1529120306
-            };
-            /**
-             * 密钥配置
-             * expiresIn：设置失效时间
-             * @type {string}
-             */
-            var secret = 'ILOVENINGHAO';
-            /**
-             * 签发 Token
-             * @type {PromiseLike<ArrayBuffer>}
-             */
-            var token = jwt.sign(payload, secret, { expiresIn: '1day' });
             /**
              * 加密密码
              * @type {string}
@@ -116,7 +87,7 @@ router.post('/api/newlyAdded',function(req,res){
             var datas = obj.password;
             var key = 'password';
             var encrypted = aesEncrypt(datas, key);
-            Mysql.query('INSERT INTO loginlist (USERNAME,PASSWORD,TOKEN) VALUES (\''+obj.username+'\',\''+encrypted+'\',\''+token+'\')',function(result){
+            Mysql.query('INSERT INTO loginlist (USERNAME,PASSWORD) VALUES (\''+obj.username+'\',\''+encrypted+'\')',function(result){
                 if(result.affectedRows===1){
                     data.msg = '';
                     data.msg = '注册成功';
@@ -158,10 +129,43 @@ router.post('/api/polling', function(req, res) {
                     var key = 'password';
                     var decrypted = aesDecrypt(encrypted, key);
                     if(decrypted === obj.password){
-                        data.msg = '登录成功';
-                        data.data = result;
-                        data.token = result[0].token;
-                        res.json(data)
+                        /**
+                         * token设置
+                         * @type {{username: string, password: string}}
+                         */
+                        var header={
+                            "alg": "HS256",
+                            "typ": "JWT"
+                        };
+                        /**
+                         * Token 数据写法
+                         * @type {{iat: number, name: string, admin: boolean}}
+                         */
+                        var payload = {
+                            iat: 1529033906,
+                            name: obj.username,
+                            admin: true
+                            // exp: 1529120306
+                        };
+                        /**
+                         * 密钥配置
+                         * expiresIn：设置失效时间
+                         * @type {string}
+                         */
+                        var secret = 'ILOVENINGHAO';
+                        /**
+                         * 签发 Token
+                         * @type {PromiseLike<ArrayBuffer>}
+                         */
+                        var token = jwt.sign(payload, secret, { expiresIn: 1 * 60 });
+                        Mysql.query('UPDATE loginlist SET token = \''+token+'\' WHERE username = \''+obj.username+'\'',function(result){
+                            if(result.affectedRows===1){
+                                data.msg = '登录成功';
+                                data.data = result;
+                                data.token = token;
+                                res.json(data)
+                            }
+                        })
                     } else {
                         data.msg = '密码错误';
                         res.json(data)
