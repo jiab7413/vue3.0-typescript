@@ -38,24 +38,30 @@ function aesDecrypt(encrypted, key) {
 }
 
 
-
 /**
  * 注册校验接口
  * true代表该用户未注册
  * false代表该用户未注册
  */
-router.get('/api/verification',function(req,res){
+router.post('/api/verification',function(req,res){
+    var data = {}
     var obj = {
-        username:'admin'
+        username:req.query.username
     };
     if(obj.username === ''){
         res.json('用户名不能为空')
     }else{
         Mysql.query('select * from loginList where username = \''+obj.username+'\'',function(result){
             if(result.length >= 1){
-                res.json(false)
-            }else{
-                res.json(true)
+                data.msg = '';
+                data.code = null;
+                data.data = [];
+                data.msg = '该用户已注册';
+                data.code = 0;
+                res.json(data)
+            } else {
+                data.code = 1;
+                res.json(data)
             }
         })
     }
@@ -66,11 +72,12 @@ router.get('/api/verification',function(req,res){
  * 注册接口
  * INSERT INTO loginlist (ID,USERNAME,PASSWORD) VALUES (5,'superman','A12345678')
  */
-router.get('/api/newlyAdded',function(req,res){
-  var obj = {
-    username:'admins',
-    password:'Ad123456789'
-  };
+router.post('/api/newlyAdded',function(req,res){
+    var data = {};
+    var obj = {
+        username:req.query.username,
+        password:req.query.password
+    };
     if(obj.username !== ''){
         if(obj.password !== ''){
             /**
@@ -106,19 +113,26 @@ router.get('/api/newlyAdded',function(req,res){
              * 加密密码
              * @type {string}
              */
-            var data = obj.password;
+            var datas = obj.password;
             var key = 'password';
-            var encrypted = aesEncrypt(data, key);
+            var encrypted = aesEncrypt(datas, key);
             Mysql.query('INSERT INTO loginlist (USERNAME,PASSWORD,TOKEN) VALUES (\''+obj.username+'\',\''+encrypted+'\',\''+token+'\')',function(result){
                 if(result.affectedRows===1){
-                    res.json(result)
+                    data.msg = '';
+                    data.msg = '注册成功';
+                    data.code = 0;
+                    res.json(data)
                 }
             })
         }else{
-            res.json('密码不能为空')
+            data.msg = '';
+            data.msg = '密码不能为空';
+            res.json(data)
         }
     }else{
-        res.json('用户名不能为空')
+        data.msg = '';
+        data.msg = '用户名不能为空';
+        res.json(data)
     }
 });
 
@@ -126,36 +140,37 @@ router.get('/api/newlyAdded',function(req,res){
  * 登录接口
  * select * from loginList where username = 'admin'
  */
-router.get('/api/polling', function(req, res) {
-  var obj = {
-      username:'admin',
-      password:'Ad12345678',
-      token:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjkwMzM5MDYsIm5hbWUiOiJhZG1pbiIsImFkbWluIjp0cnVlLCJleHAiOjE1MjkxMjAzMDZ9.hZnF67Cgarst-n8lNjjSyPmVaSOuxoCZpPGIPhTTRxI'
-  };
-  if(obj.username === ''){
-      res.json('用户名不能为空')
-  }else{
-      if(obj.password === ''){
-          res.json('密码不能为空')
-      }else{
-          if(obj.token === ''){
-              res.json('密码不能为空')
-          }else{
-              Mysql.query('select * from loginList where username = \''+obj.username+'\'',function(result){
-                  if(result.length >= 1){
-                      var encrypted =result[0].password;
-                      var key = 'password';
-                      var decrypted = aesDecrypt(encrypted, key);
-                      if(decrypted === obj.password && result[0].token === obj.token){
-                          res.json(result)
-                      }
-                  }else{
-                      res.json('0')
-                  }
-              })
-          }
-      }
-  }
+router.post('/api/polling', function(req, res) {
+    var data = {};
+    var obj = {
+        username: req.query.username,
+        password: req.query.password,
+    };
+    if(obj.username === ''){
+        res.json('用户名不能为空')
+    }else{
+        if(obj.password === ''){
+            res.json('密码不能为空')
+        }else{
+            Mysql.query('select * from loginList where username = \''+obj.username+'\'',function(result){
+                if(result.length >= 1){
+                    var encrypted =result[0].password;
+                    var key = 'password';
+                    var decrypted = aesDecrypt(encrypted, key);
+                    if(decrypted === obj.password){
+                        data.msg = '登录成功';
+                        data.data = result;
+                        data.token = result[0].token;
+                        res.json(data)
+                    }
+                }else{
+                    data.msg = '';
+                    data.msg = '未查取到该用户';
+                    res.json(data)
+                }
+            })
+        }
+    }
 });
 
 /**
@@ -167,9 +182,9 @@ router.get('/api/strikeOut',function(req,res){
         id:1,
         username:'admin'
     };
-  if(obj.id === null){
-      return
-  }else{
+    if(obj.id === null){
+        return
+    }else{
         if(obj.username === ''){
             res.json('用户名不能为空')
         }else{
@@ -179,7 +194,7 @@ router.get('/api/strikeOut',function(req,res){
                 }
             })
         }
-  }
+    }
 });
 
 /**

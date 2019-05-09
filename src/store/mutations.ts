@@ -27,7 +27,7 @@ const Mutations: MutationTree<any> = {
         state.loginList = res.data.data;
         state.success = res.data.msg;
         if (res.data.token !== undefined) {
-            localStorage.setItem("TOKEN", res.data.token);
+            sessionStorage.setItem("TOKEN", res.data.token);
         }
     }
 };
