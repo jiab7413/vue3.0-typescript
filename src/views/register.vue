@@ -19,6 +19,9 @@
             <div class="register_content_bot">
                 <button class="register_button" @click="registerButton">注册</button>
             </div>
+            <div class="returnLogin">
+                <span @click="returnLogins">返回登录</span>
+            </div>
         </div>
         </div>
     </div>
@@ -101,9 +104,12 @@ export default class Register extends Vue {
         if (this.password.indexOf(' ') === -1) {
             return this.password
         } else {
-            alert('不能输入空格!')
+            alert('不能输入空格!');
             this.password = ''
         }
+    }
+    private returnLogins() {
+        this.$router.push('/login')
     }
 }
 </script>
@@ -168,5 +174,17 @@ export default class Register extends Vue {
         margin-right:1vw;
         background: aqua;
         border: aqua;
+    }
+    .returnLogin{
+        text-align: right;
+        padding-right: 1vh;
+    }
+    .returnLogin span{
+        font-size: 0.75vw;
+        cursor: pointer;
+        color: #ccc;
+    }
+    .returnLogin span:hover{
+        color:aqua;
     }
 </style>

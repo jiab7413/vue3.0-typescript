@@ -46,6 +46,14 @@
             if (this.successChange === '登录成功') {
                 this.$router.push('/')
             }
+            if (this.successChange === '密码错误') {
+                this.username = '';
+                this.password = ''
+            }
+            if (this.successChange === '未查取到该用户') {
+                this.username = '';
+                this.password = ''
+            }
         }
         private registerPage() {
             this.$router.push('/register')

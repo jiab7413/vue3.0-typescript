@@ -162,6 +162,9 @@ router.post('/api/polling', function(req, res) {
                         data.data = result;
                         data.token = result[0].token;
                         res.json(data)
+                    } else {
+                        data.msg = '密码错误';
+                        res.json(data)
                     }
                 }else{
                     data.msg = '';
